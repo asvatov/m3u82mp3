@@ -61,7 +61,7 @@ def read_bytes(path, silent = True):
     is_url = is_valid(path)
     if is_url:
         if not silent:
-        print(path)
+            print(path)
         data_response = urlopen(path)
         content = data_response.read()
     else:
@@ -71,23 +71,11 @@ def read_bytes(path, silent = True):
     return content
 
 
-def write_bytes(path, content):
-    """Write bytes to a file.
-
-    Args:
-        path (str): File path to save.
-        content (bytes): Bytes content to write.
-    """
-
-    with open(path, "wb") as fp:
-        fp.write(content)
-
-
-def save_converted_mp3(save_path, content):
+def save_converted_mp3(output, content):
     """Save mp3 file from bytes.
 
     Args:
-        save_path (str): File path to save.
+        output (file object): File path to save.
         content (bytes): Bytes content to write.
 
     Raises:
@@ -97,7 +85,7 @@ def save_converted_mp3(save_path, content):
     if content is None:
         raise TypeError("Empty mp3 content to save.")
 
-    write_bytes(save_path, content)
+    output.write(content)
 
 
 def get_host_uri(m3u8_obj):
@@ -126,13 +114,13 @@ def get_host_uri(m3u8_obj):
     return host_uri
 
 
-def get_ts_from_m3u8(m3u8_filepath, host_uri=None):
+def get_ts_from_m3u8(input, host_uri=None):
     """Get audio bytes from stream audio file `m3u8_filepath`.
 
     Iterate through all audio sources chunks, read data, decrypt it if needed and return full audio bytes.
 
     Args:
-        m3u8_filepath (str): File path to m3u8 file.
+        m3u8_filepath (file object): File path to m3u8 file.
         host_uri (str): Optional variable, that contains host of all audio chunks sources from m3u8 file.
 
     Returns:
@@ -143,7 +131,7 @@ def get_ts_from_m3u8(m3u8_filepath, host_uri=None):
         TypeError: An error occurred if base URI is not set.
     """
 
-    m3u8_obj = m3u8.load(m3u8_filepath)
+    m3u8_obj = m3u8.loads(input.read())
     media_sequence = m3u8_obj.media_sequence
 
     host_uri = host_uri or get_host_uri(m3u8_obj)
@@ -173,20 +161,20 @@ def get_ts_from_m3u8(m3u8_filepath, host_uri=None):
     return ts_content
 
 
-def convert(m3u8_filepath, save_path):
+def convert(input, output):
     """Get mp3 file from m3u8 audio stream and save it to file system.
 
     Args:
-        m3u8_filepath (str): File path to m3u8 file.
-        save_path (str): File path to save mp3 file.
+        input (file object): IO to read m3u8 from.
+        output (file object): IO to write mp3 into.
 
     Raises:
-        ValueError: An error occurred trying to load m3u8 object from file `m3u8_filepath`.
+        ValueError: An error occurred trying to load m3u8 object from file `input`.
         TypeError: An error occurred if base URI is not set.
     """
 
-    ts_bytes = get_ts_from_m3u8(m3u8_filepath)
-    save_converted_mp3(save_path, ts_bytes)
+    ts_bytes = get_ts_from_m3u8(input)
+    save_converted_mp3(output, ts_bytes)
 
 
 def parse_command_line_args():
