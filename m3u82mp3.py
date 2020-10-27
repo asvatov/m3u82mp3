@@ -18,6 +18,7 @@ import argparse
 import os
 import binascii
 import m3u8
+import sys
 
 from Crypto.Cipher import AES
 from urllib.parse import urlparse
@@ -198,9 +199,9 @@ def parse_command_line_args():
 
     ap = argparse.ArgumentParser(description='Command line converter from input_file.m3u8 to output_file.mp3',
                                  epilog="That's all folks")
-    ap.add_argument("-i", "--input", required=True,
+    ap.add_argument("-i", "--input", required=False,
                     help="path to input m3u8 file to be converted")
-    ap.add_argument("-o", "--output", required=True,
+    ap.add_argument("-o", "--output", required=False,
                     help="path to output mp3 file")
     args = vars(ap.parse_args())
 
@@ -214,7 +215,18 @@ def run_from_cmd():
     """Run converter from command line."""
 
     input_filepath, output_filepath = parse_command_line_args()
-    convert(input_filepath, output_filepath)
+
+    if input_filepath:
+        input = open(input_filepath, 'r')
+    else:
+        input = sys.stdin
+
+    if output_filepath:
+        output = open(output_filepath, 'wb')
+    else:
+        output = sys.stdout.buffer
+
+    convert(input, output)
 
 
 if __name__ == "__main__":
