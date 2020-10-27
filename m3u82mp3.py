@@ -45,7 +45,7 @@ def is_valid(url, qualifying=None):
                 for qualifying_attr in qualifying])
 
 
-def read_bytes(path):
+def read_bytes(path, silent = True):
     """Read bytes from a file.
 
     Args:
@@ -59,6 +59,7 @@ def read_bytes(path):
 
     is_url = is_valid(path)
     if is_url:
+        if not silent:
         print(path)
         data_response = urlopen(path)
         content = data_response.read()
